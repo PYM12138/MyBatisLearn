@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.UserMapper">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+<!--<cache eviction="LRU" flushInterval="5000" readOnly="true" size="1024" />-->
+    <!--
+        eviction:缓存的回收策略 默认LRU
+                  LRU：最近最少使用，或者长时间不被使用的对象
+                  FIFO：先进先出
+                  SOFT：软引用
+                  WEAK：弱引用
+        flushInterval:缓存的刷新间隔。单位是毫秒
+        readOnly:
+                 true 只读 mybatis则认为不会修改数据，那么数据会直接从缓存中引用交给用户。不安全、速度快
+                 false 非只读 mybatis则认为会修改数据，那么会进行序列化&反序列化克隆一份新的数据进行引用。安全 、速度慢
+
+    -->
+    <select id="getUser" resultType="com.atguigu.bean.User">
+        select * from user where id=#{id}
+    </select>
+
+
+
+
+
+
+</mapper>

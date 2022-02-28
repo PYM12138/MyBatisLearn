@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--写好的Mapper.xml文件要到Mybatis-config.xml里面注册-->
+<mapper namespace="com.atguigu.dao.DepartmentMapper">
+    <!--证明有效，当你的属性名和列名不匹配，就算是分布查询，也完全可以用resultMap去自定义映射集-->
+    <resultMap id="DepartMap" type="com.atguigu.bean.Department">
+        <id column="DE_Id" property="id"/>
+        <result column="DE_Name" property="name"/>
+    </resultMap>
+    <select id="getDeptByID" resultMap="DepartMap">
+        select * from tab_dept where DE_Id =#{id}
+    </select>
+
+
+    <resultMap id="DepartMap1" type="com.atguigu.bean.Department">
+        <id column="DE_Id" property="id"/>
+        <result column="DE_Name" property="name"/>
+        <collection property="userList" ofType="com.atguigu.bean.User">
+            <id column="id" property="id"/>
+            <result column="name" property="name" />
+            <result column="password" property="password"/>
+            <result column="address" property="address"/>
+            <result column="phone" property="phone"/>
+        </collection>
+    </resultMap>
+    <!--一个部门下的所有员工查询-->
+    <select id="getDeptByIdReturnUsers" resultMap="DepartMap1">
+        select *
+        from user
+        left join tab_dept td on td.DE_Id = user.D_Id
+        where td.DE_Id=#{id}
+    </select>
+
+
+    <resultMap id="DeptAndUsers" type="com.atguigu.bean.Department">
+        <id column="DE_Id" property="id"/>
+        <result column="DE_Name" property="name"/>
+        <!--
+            column属性值其实是一个键值对,也就是可以接收多个值 column={key1=column1,...}
+            在标签里面还有一个fetchType="lazy" 意思是局部懒加载 可以改为eager 那么这个标签就是立即加载
+            -->
+        <collection property="userList" select="com.atguigu.dao.UserMapper.getUserAndDeptById" column="{id=DE_Id}"/>
+    </resultMap>
+    <!--分布查询-->
+    <select id="getDeptByIdWithUser" resultMap="DeptAndUsers" >
+        select * from tab_dept where DE_Id=#{id}
+    </select>
+
+
+</mapper>

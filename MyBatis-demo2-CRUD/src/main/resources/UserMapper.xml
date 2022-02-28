@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.UserMapper">
+    <!--
+    namespace:名称空间;指定为接口的全类名,是当前这个文件的大标题，相当于springMVC的@RequestMapping放在了类上面
+    id：唯一标识
+    resultType：返回值类型
+    #{id}：从传递过来的参数中取出id值
+     -->
+    <!--
+    ${}和#{}区别：#{}是预编译的，${}是直接取值的，当原生的jdbc不支持占位符的操作，就可以使用${}进行传值。
+    #{}还可以指定当前传入的值类型，如果是NULL在JDBC里面映射的OTHER，可以在当前的#{}改成jdbcType=NULL
+    或者在mybatis-config的setting添加一个jdbcForNull=NULL
+    -->
+    <select id="getUserById" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where id = #{id}
+    </select>
+    <!--
+    获取当前插入的值的自增主键值
+    useGeneratedKeys="true" 获取自增主键值策略
+    keyProperty="id" 取到的值封装在哪个javaBean对象属性
+    -->
+    <insert id="addUser" parameterType="com.atguigu.bean.User" useGeneratedKeys="true" keyProperty="id">
+        <!--
+        如果不是自增长的，可以先查询当前的序列，然后拿到值，封装起来，在给insert语句使用
+        order 表示当前的标签执行顺序 before在insert之前 after在insert之后
+        <selectKey keyProperty="id" order="BEFORE" resultType="Integer"></selectKey>
+        -->
+        insert into user(name,password,address,phone)
+        values(#{name},#{password},#{address},#{phone})
+    </insert>
+
+    <update id="updateUser" parameterType="com.atguigu.bean.User">
+        update user
+        set name=#{name},
+            password=#{password},
+            address=#{address},
+            phone=#{phone}
+        where id = #{id}
+    </update>
+    <delete id="deleteUser" parameterType="com.atguigu.bean.User">
+        delete
+        from user
+        where id = #{id}
+    </delete>
+    <select id="getUserByIdAndName" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where id = #{id} and name=#{name}
+    </select>
+    <select id="getUserByUser" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where name=#{name} and id = #{id}
+    </select>
+    <select id="getUsersLikeName" resultType="com.atguigu.bean.User">
+        select * from user where name like #{name}
+    </select>
+    <select id="getUserByIdMap" resultType="map">
+        select * from user where id=#{id}
+    </select>
+    <!--两种Map集合对象最大的不同就是resultType这点要注意-->
+    <select id="getUserByNameMap" resultType="com.atguigu.bean.User">
+        select * from user where name like #{name}
+    </select>
+    <!--自定义映射结果集:这个和resultType只能二选一-->
+    <resultMap id="MyUser" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+        <id column="id" property="id"/>
+
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+    </resultMap>
+    <select id="getUserById1" resultMap="MyUser">
+        select * from user where id=#{id}
+    </select>
+    <select id="getUserByMap" resultType="com.atguigu.bean.User">
+        select * from user where id=#{id} and name=#{name}
+    </select>
+
+</mapper>

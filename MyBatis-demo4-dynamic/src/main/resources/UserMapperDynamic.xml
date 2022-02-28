@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.UserMapper">
+
+   <!-- <select id="getUserIf" resultType="com.atguigu.bean.User">
+        select * from user
+
+    <where>  &lt;!&ndash;where 标签会自动帮你去掉第一个多余的and。注意别把AND写在条件后面！&ndash;&gt;
+    <if test="id!=null">
+        &lt;!&ndash; test 里面是OGNL表达式，具体看ppt，里面的参数是java传入的值&ndash;&gt;
+      id=#{id}
+    </if>
+    <if test="name!=null or name!='' ">
+      and name like #{name}
+    </if>
+    </where>
+    </select>-->
+
+    <select  id="getUserIf" resultType="com.atguigu.bean.User">
+        select * from user
+        <!--使用trim标签来自定义规则
+        prefix :在一开始就在最前面的sql加上
+        suffix:在最后面加上
+        prefixOverrides:(前缀)指定你要覆盖的值，把对应的值直接覆盖变为空
+        suffixOverrides:(后缀) 作用同上，对应的位置不同
+        -->
+        <trim prefix="where" suffixOverrides="and">
+            <if test="id!=null">
+                <!-- test 里面是OGNL表达式，具体看ppt，里面的参数是java传入的值-->
+                id=#{id} and
+            </if>
+            <if test="name!=null and name!='' ">
+                 name like #{name}
+            </if>
+        </trim>
+    </select>
+
+
+    <select id="getUserChoose" resultType="com.atguigu.bean.User">
+        select * from user
+    <where>
+        <choose>
+            <when test="id!=null">
+                id=#{id}
+            </when>
+            <when test="name!=null">
+                name like #{name}
+            </when>
+            <otherwise>
+                name="胡图图"
+            </otherwise>
+
+        </choose>
+    </where>
+    </select>
+
+
+
+    <select id="" resultType="com.atguigu.bean.User">
+        update user
+        <set>
+        <if test="id!=null">
+            id=#{id},
+        </if>
+        <if test="name!=null">
+            name=#{name}
+        </if>
+        </set>
+        where id=#{id}
+
+    </select>
+    <select id="updateUser" resultType="com.atguigu.bean.User">
+        update user
+        <trim prefix="set" suffixOverrides=",">
+            <if test="id!=null">
+                id=#{id},
+            </if>
+            <if test="name!=null">
+                name=#{name}
+            </if>
+        </trim>
+        where id=#{id}
+
+    </select>
+    <select id="getUserCollection" resultType="com.atguigu.bean.User" >
+        select * from user where
+         <!--
+            collection: 有两种选择 list 和 collection
+            item :指定一个名字，然后就可以取出来用 相当于变量名
+            open:执行对应sql语句一开始的地方加入数据
+            close:对应sql语句末尾处加入数据
+            sepparator:传入的参数之间的分隔符 一般是,
+            index:遍历的是list,index就是索引, item是值
+                   遍历map,index是key,item是value
+
+            mybatis会把list集合封装成map集合，key就是list,value是list的内容
+
+         -->
+        <foreach collection="list" item="item_id" open="id in (" close=")" separator=",">
+            #{item_id}
+        </foreach>
+    </select>
+    <insert id="insertUsersList">
+        insert into  user(name, password, address, phone) values
+        <foreach collection="list" item="user" separator=",">
+          (#{user.name},#{user.password},#{user.address},#{user.phone})
+
+        </foreach>
+    </insert>
+
+    <!--还有两个内置参数
+        _databaseId:如果配置了databaseIdProvider标签，那么这个代表当前数据库的别名，可以在多数据库的时候，作为一个对应数据库的判断标准。
+        比如说配合IF标签，然后对这个参数进行判断。
+        _parameter: 这个代表你传入的值的
+    -->
+<!--    <select id="" resultType="com.atguigu.bean.User">
+        select * from user
+        <if test="_databaseId==mysql">
+            <if test="_parameter!=null">
+                where name=#{_parameter.name}
+            </if>
+        </if>
+    </select>-->
+    
+    <select id="getUserBind" resultType="com.atguigu.bean.User">
+        select  <include refid="commonColumn">
+                    <property name="proId" value="id"/>
+                </include>
+        from user
+        <bind name="_name" value="'%'+name+'%'"/>
+        where name like #{_name}
+    </select>
+
+    <!--抽取重复的sql语句，重复利用
+        需配合include标签使用,refid属性是sql标签的id值
+            include标签里面还能在定义其他值-》property标签
+            然后可以在sql标签取值，取值方式使用${},不能用#{}
+
+    -->
+    <sql id="commonColumn">
+        name,${proId}
+    </sql>
+
+
+
+
+
+</mapper>

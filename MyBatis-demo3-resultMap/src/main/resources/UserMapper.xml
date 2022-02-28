@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.UserMapper">
+<!--    &lt;!&ndash;
+    namespace:名称空间;指定为接口的全类名,是当前这个文件的大标题，相当于springMVC的@RequestMapping放在了类上面
+    id：唯一标识
+    resultType：返回值类型
+    #{id}：从传递过来的参数中取出id值
+     &ndash;&gt;
+    &lt;!&ndash;
+    ${}和#{}区别：#{}是预编译的，${}是直接取值的，当原生的jdbc不支持占位符的操作，就可以使用${}进行传值。
+    #{}还可以指定当前传入的值类型，如果是NULL在JDBC里面映射的OTHER，可以在当前的#{}改成jdbcType=NULL
+    或者在mybatis-config的setting添加一个jdbcForNull=NULL
+    &ndash;&gt;
+    <select id="getUserById" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where id = #{id}
+    </select>
+    &lt;!&ndash;
+    获取当前插入的值的自增主键值
+    useGeneratedKeys="true" 获取自增主键值策略
+    keyProperty="id" 取到的值封装在哪个javaBean对象属性
+    &ndash;&gt;
+    <insert id="addUser" parameterType="com.atguigu.bean.User" useGeneratedKeys="true" keyProperty="id">
+        &lt;!&ndash;
+        如果不是自增长的，可以先查询当前的序列，然后拿到值，封装起来，在给insert语句使用
+        order 表示当前的标签执行顺序 before在insert之前 after在insert之后
+        <selectKey keyProperty="id" order="BEFORE" resultType="Integer"></selectKey>
+        &ndash;&gt;
+        insert into user(name,password,address,phone)
+        values(#{name},#{password},#{address},#{phone})
+    </insert>
+
+    <update id="updateUser" parameterType="com.atguigu.bean.User">
+        update user
+        set name=#{name},
+            password=#{password},
+            address=#{address},
+            phone=#{phone}
+        where id = #{id}
+    </update>
+    <delete id="deleteUser" parameterType="com.atguigu.bean.User">
+        delete
+        from user
+        where id = #{id}
+    </delete>
+    <select id="getUserByIdAndName" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where id = #{id} and name=#{name}
+    </select>
+    <select id="getUserByUser" resultType="com.atguigu.bean.User">
+        select id, name, password, address, phone
+        from user
+        where name=#{name} and id = #{id}
+    </select>
+    <select id="getUsersLikeName" resultType="com.atguigu.bean.User">
+        select * from user where name like #{name}
+    </select>
+    <select id="getUserByIdMap" resultType="map">
+        select * from user where id=#{id}
+    </select>
+    &lt;!&ndash;两种Map集合对象最大的不同就是resultType这点要注意&ndash;&gt;
+    <select id="getUserByNameMap" resultType="com.atguigu.bean.User">
+        select * from user where name like #{name}
+    </select>-->
+
+
+
+    <!--自定义映射结果集:这个和resultType只能二选一-->
+    <resultMap id="MyUser" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+
+        <id column="id" property="id"/>
+
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+    </resultMap>
+    <select id="getUserById1" resultMap="MyUser">
+        select * from user where id=#{id}
+    </select>
+
+
+    <!--级联查询方式一 -->
+    <resultMap id="UserAndDept" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+        <id column="id" property="id"/>
+
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <result column="DE_Id" property="dept.id"/>
+        <result column="DE_Name" property="dept.name"/>
+    </resultMap>
+
+    <!--级联查询方式二 -->
+    <resultMap id="UserAndDept2" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+        <id column="id" property="id"/>
+
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <!--
+        association 指定联合的javaBean对象
+        property 指定的属性为联合对象
+        javaType 指定的属性的对象类型
+        -->
+        <association property="dept" javaType="com.atguigu.bean.Department">
+            <id column="DE_Id" property="id"/>
+            <result column="DE_Name" property="name"/>
+        </association>
+    </resultMap>
+
+
+<!--    <select id="getUserAndDeptById" resultMap="UserAndDept2">
+        select * from user,tab_dept where user.D_Id=tab_dept.DE_Id and id=#{id}
+    </select>-->
+
+    <!--级联查询方式三:分步查询-->
+    <resultMap id="UserAndDept3" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+        <id column="id" property="id"/>
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <association property="dept" select="com.atguigu.dao.DepartmentMapper.getDeptByID"
+        column="D_Id" >
+          <!--  <id column="DE_Id" property="id"/>
+            <result column="DE_Name" property="name"/>-->
+        </association>
+
+    </resultMap>
+    <select id="getUserAndDeptByStepOne" resultMap="UserAndDept3">
+        select * from user where id=#{id}
+    </select>
+
+    <!--一个部门下的所有员工-->
+    <resultMap id="UsersAndDept" type="com.atguigu.bean.User">
+        <!--主键列 column,对应javaBean的id属性-->
+        <id column="id" property="id"/>
+        <!--普通列-->
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+
+    </resultMap>
+    <!--
+    查询一个部门下的多个员工信息,查询条件不同,结果相同,方法相同.所以我直接拿来用了
+    注意:select的id是唯一标识符,不能重复使用!
+    -->
+   <!-- <select id="getUserAndDeptById" resultMap="UsersAndDept" >
+        select * from user where D_Id=#{id}
+    </select>-->
+    <resultMap id="resultAndDiscriminator" type="com.atguigu.bean.User">
+        <id column="id" property="id"/>
+        <result column="name" property="name" />
+        <result column="password" property="password"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <!--如果id是1,则查出他的部门信息-->
+        <!--discriminator 鉴别器 其判断流程和switch类似  -->
+        <!-- column 要判断的列  javaType 该列的类型-->
+        <discriminator column="id" javaType="integer">
+            <!--
+             case 就是情况1 value是要判断的值 。
+            case可以有多个
+            -->
+            <case value="1" resultType="com.atguigu.bean.User">
+                <association property="dept" select="com.atguigu.dao.DepartmentMapper.getDeptByID"
+                             column="D_Id" />
+            </case>
+
+        </discriminator>
+    </resultMap>
+    <select id="getUserAndDeptById" resultMap="resultAndDiscriminator" >
+        select * from user where id=#{id}
+    </select>
+
+
+
+
+</mapper>
